@@ -1,4 +1,4 @@
 # - Wall()
 1 - PrettyWall()
 * - Hero()
-. - empty
+. - Empty()
