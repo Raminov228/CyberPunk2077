@@ -77,7 +77,6 @@ while not finished:
 				procc.stop()
 
 		if event.type == pygame.KEYDOWN:
-			print(1)
 			if event.key == pygame.K_e:
 				procc.rotateright()
 
