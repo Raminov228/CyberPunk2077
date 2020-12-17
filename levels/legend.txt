@@ -1,3 +1,4 @@
 # - Wall()
 * - Hero()
+e - Exit()
 . - Empty()

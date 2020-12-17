@@ -26,7 +26,8 @@ class Objects():
 		self.x += dx
 
 	def dy(self, dy):
-		self.y += dy		
+		self.y += dy
+		
 
 class StaticObjects(Objects):
 	'''
@@ -56,7 +57,7 @@ class Space():
 				return live
 
 	def get_map(self):
-		return self.map
+		return self.map		
 
 class Map():
 	'''
@@ -64,11 +65,13 @@ class Map():
 	'''
 	def __init__(self, static_objects):
 		self.static_objects = static_objects
+		self.exit = self.get_exit()
 
 	def check_collision(self, x, y):
 		for obj in self.static_objects:
-			if obj.is_in(x, y):
-				return True
+			if obj != self.exit:
+				if obj.is_in(x, y):
+					return True
 		return False
 
 	def get_object(self, x, y):
@@ -77,11 +80,20 @@ class Map():
 				return obj
 		return 'empty'
 
+	def get_exit(self):
+		for obj in self.static_objects:
+			if type(obj) == type(Exit(0, 0)):
+				return obj
 
 class Wall(StaticObjects):
 	'''
 	@ Класс стен
 	'''
+	def is_in(self, x, y):
+		return (self.x <= x <= self.x + CELL_SIZE) and (self.y <= y <= self.y + CELL_SIZE)
+
+
+class Exit(StaticObjects):
 	def is_in(self, x, y):
 		return (self.x <= x <= self.x + CELL_SIZE) and (self.y <= y <= self.y + CELL_SIZE)
 
@@ -272,10 +284,9 @@ class Camera(Objects):
 		else:
 			return 1
 
-
-class EventProcessor():
+class MainProcessor():
 	'''
-	@ Процессор обрабатывающий нажатия
+	@ Процессор обрабатывающий нажатия во время игры
 	@ TODO: сделать аргументом event
 	'''
 	def __init__(self, space):
@@ -283,6 +294,7 @@ class EventProcessor():
 		self.hero = space.get_hero()
 		self.angle_speed = 0
 		self.dx = self.dy = 0
+		self.exit = space.map.get_exit()
 
 	def mousemotion(self, pos):
 		x = pos[0]
@@ -290,6 +302,55 @@ class EventProcessor():
 			self.angle_speed = - ANGLE_SPEED * (x - WINDOW_WIDTH/2) / (WINDOW_WIDTH / 2)
 		else:
 			self.angle_speed = 0
+
+	def key_parcer(self, event):
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_w:
+				self.forward()
+
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_s:
+				self.backward()
+
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_d:
+				self.right()
+
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_a:
+				self.left()
+
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_w:
+				self.stop()
+
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_s:
+				self.stop()
+
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_d:
+				self.stop()
+
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_a:
+				self.stop()
+
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_e:
+				self.rotateright()
+
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_e:
+				self.stoprotation()
+
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_q:
+				self.rotateleft()
+
+		if event.type == pygame.KEYUP:
+			if event.key == pygame.K_q:
+				self.stoprotation()
 
 	def rotateright(self):
 		self.angle_speed = -ANGLE_SPEED
@@ -319,8 +380,14 @@ class EventProcessor():
 			self.hero.dx(self.dx)
 			self.hero.dy(self.dy)
 
+		return self.is_exit()
+
+	def is_exit(self):
+		return self.exit.is_in(self.hero.get_x(), self.hero.get_y())
+
 	def is_empty(self):
 		return not self.space.map.check_collision(self.hero.get_x() + self.dx, self.hero.get_y() + self.dy)
+
 
 	def stop(self):
 		self.dx = 0

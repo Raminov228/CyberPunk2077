@@ -4,6 +4,8 @@ from pygame.draw import *
 #импортим все объекты
 from objects import *
 
+from Window_interface import *
+
 import os
  
 os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -11,93 +13,75 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
 
 FPS = 30
+
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-
-generator = LevelGenerator()
-space = generator.generate_level(1)
-hero = space.get_hero()
-hero.set_angle(math.pi / 2)
-
-cam = Camera(space)
-screen.blit(cam.render(), (0, 0))
-
-procc = EventProcessor(space)
-
-pygame.display.update()
 clock = pygame.time.Clock()
-finished = False
 
-pygame.mouse.set_pos([WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2])
-colibrarion = False
+while 1:
+	menu = Menu()
+	menuprocc = MenuProcessor(menu)
 
+	finished = False
+	quit = False
 
-while not finished:
-	clock.tick(FPS)
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			finished = True
+	while not finished and not quit:
+		clock.tick(FPS)
 		
-		if event.type == pygame.MOUSEMOTION:
-			if colibrarion:
-				procc.mousemotion(event.pos)
-				colibrarion = False
-			else:
-				colibrarion = True
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				quit = True
 			
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_w:
-				procc.forward()
+			menuprocc.click_parcer(event)
 
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_s:
-				procc.backward()
+		screen.blit(menu.render(), (0, 0))
+		finished, quit = menuprocc.update()
+		pygame.display.update()
 
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_d:
-				procc.right()
+	print(finished, quit)
 
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_a:
-				procc.left()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_w:
-				procc.stop()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_s:
-				procc.stop()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_d:
-				procc.stop()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_a:
-				procc.stop()
-
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_e:
-				procc.rotateright()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_e:
-				procc.stoprotation()
-
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_q:
-				procc.rotateleft()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_q:
-				procc.stoprotation()		
+	if quit:
+		break
 
 
-	rect(screen, (0, 0, 255), (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
-	rect(screen, (0, 255, 0), (0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
+	generator = LevelGenerator()
+	space = generator.generate_level(1)
+	hero = space.get_hero()
+	hero.set_angle(math.pi / 2)
 
+	cam = Camera(space)
 	screen.blit(cam.render(), (0, 0))
-	procc.update()
+
+	procc = MainProcessor(space)
+
 	pygame.display.update()
+
+	finished = False
+
+	pygame.mouse.set_pos([WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2])
+	colibrarion = False
+
+	while not finished:
+		clock.tick(FPS)
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				finished = True
+			
+			if event.type == pygame.MOUSEMOTION:
+				if colibrarion:
+					procc.mousemotion(event.pos)
+					colibrarion = False
+				else:
+					colibrarion = True
+			
+			procc.key_parcer(event)
+
+		rect(screen, (0, 0, 255), (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
+		rect(screen, (0, 255, 0), (0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
+
+		screen.blit(cam.render(), (0, 0))
+		finished = procc.update()
+		pygame.display.update()
+
+
 
 pygame.quit()
