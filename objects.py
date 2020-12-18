@@ -140,12 +140,16 @@ class LevelGenerator():
 
 		for y in range(len(raw_map)):
 			for x in range(len(raw_map[0])):
-				coords = (x * CELL_SIZE, y * CELL_SIZE)
+				coords = [x * CELL_SIZE, y * CELL_SIZE]
 				ch = raw_map[y][x]
 				obj_name = self.legend[ch][:-2]
 
 				if obj_name == 'Empty':
 					continue
+
+				if obj_name == 'Hero':
+					coords[0] = CELL_SIZE + CELL_SIZE / 2
+					coords[1] = CELL_SIZE + CELL_SIZE / 2
 
 				tmp = []
 				eval('tmp.append(' + obj_name + '(' + ','.join([str(coords[0]), str(coords[1])]) + '))') 
@@ -269,9 +273,10 @@ class Camera(Objects):
 		rect(self.screen, color, rct)
 
 	def _calc_h_on_window(self, r):
-		if r > 1:
+		if 1 < r < MAX_DEPTH:
 			return WINDOW_HEIGHT / r
-
+		elif r == MAX_DEPTH:
+			return 0
 		else:
 			return WINDOW_HEIGHT
 

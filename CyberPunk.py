@@ -4,6 +4,8 @@ from pygame.draw import *
 #импортим все объекты
 from objects import *
 
+from LabirintGenerator import *
+
 from Window_interface import *
 
 import os
@@ -43,8 +45,11 @@ while 1:
 		break
 
 
+	labgen = LabirintGenerator()
+	labgen.generate_txt()
+
 	generator = LevelGenerator()
-	space = generator.generate_level(1)
+	space = generator.generate_level(0)
 	hero = space.get_hero()
 	hero.set_angle(math.pi / 2)
 
@@ -79,6 +84,7 @@ while 1:
 		rect(screen, (0, 255, 0), (0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
 
 		screen.blit(cam.render(), (0, 0))
+		
 		finished = procc.update()
 		pygame.display.update()
 
