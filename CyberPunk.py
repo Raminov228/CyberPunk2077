@@ -1,14 +1,13 @@
 import pygame
 from pygame.draw import *
 
-#импортим все объекты
-from objects import *
+import objects
+import LabirintGenerator
+import LevelGenerator
+import Window_interface
+import Processors
 
-from Window_interface import *
-
-import os
- 
-os.environ['SDL_VIDEO_CENTERED'] = '1'
+from settings import *
 
 pygame.init()
 
@@ -18,8 +17,9 @@ screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 clock = pygame.time.Clock()
 
 while 1:
-	menu = Menu()
-	menuprocc = MenuProcessor(menu)
+	# Запускаем меню игры
+	menu = Window_interface.Menu()
+	menuprocc = Processors.MenuProcessor(menu)
 
 	finished = False
 	quit = False
@@ -37,35 +37,40 @@ while 1:
 		finished, quit = menuprocc.update()
 		pygame.display.update()
 
-	print(finished, quit)
-
 	if quit:
 		break
 
 
-	generator = LevelGenerator()
-	space = generator.generate_level(1)
+	#генерим лабиринт
+	labgen = LabirintGenerator.LabirintGenerator()
+	labgen.generate_txt()
+
+	#загружаем лабиринт
+	generator = LevelGenerator.LevelGenerator()
+	space = generator.generate_level(0)
+	
+	#направляем героя в нужную сторону
 	hero = space.get_hero()
 	hero.set_angle(math.pi / 2)
 
-	cam = Camera(space)
+	#создаем камеру
+	cam = objects.Camera(space)
 	screen.blit(cam.render(), (0, 0))
-
-	procc = MainProcessor(space)
-
 	pygame.display.update()
 
-	finished = False
+	#запускаем сам игровой процесс
+	procc = Processors.MainProcessor(space)
 
+	finished = False
 	pygame.mouse.set_pos([WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2])
 	colibrarion = False
-
+	
 	while not finished:
 		clock.tick(FPS)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				finished = True
-			
+
 			if event.type == pygame.MOUSEMOTION:
 				if colibrarion:
 					procc.mousemotion(event.pos)
@@ -75,13 +80,13 @@ while 1:
 			
 			procc.key_parcer(event)
 
+		#задаем фон
 		rect(screen, (0, 0, 255), (0, 0, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
 		rect(screen, (0, 255, 0), (0, WINDOW_HEIGHT / 2, WINDOW_WIDTH, WINDOW_HEIGHT / 2))
 
 		screen.blit(cam.render(), (0, 0))
+		
 		finished = procc.update()
 		pygame.display.update()
-
-
 
 pygame.quit()

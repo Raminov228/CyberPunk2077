@@ -4,6 +4,9 @@ import pygame
 from pygame.draw import *
 
 class Button():
+	'''
+	@ Класс кнопки
+	'''
 	def __init__(self, coords, size, color):
 		self.x, self.y = coords
 		self.size = size
@@ -24,6 +27,10 @@ class Button():
 
 
 class Menu():
+	'''
+	@ Класс окна меню
+	@ out :: pygame.screen
+	'''
 	def __init__(self):
 		self.finished = False
 		self.quit = False
@@ -53,19 +60,4 @@ class Menu():
  
 			self.screen.blit(text1, (button.x + 10, button.y + 10))
 
-		return self.screen
-
-
-class MenuProcessor():
-	def __init__(self, menu):
-		self.buttons = menu.buttons
-
-	def click_parcer(self, event):
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			if event.button == 1:
-				for key in self.buttons:
-					button = self.buttons[key]
-					button.click(event.pos)
-
-	def update(self):
-		return self.buttons['start'].get_state(), self.buttons['exit'].get_state() 
+		return self.screen 

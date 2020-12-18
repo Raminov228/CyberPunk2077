@@ -1,9 +1,10 @@
-import os
+from settings import *
 
 import pygame
+import os
+
 from pygame.draw import *
 
-from settings import *
 
 class Objects():
 	'''
@@ -33,7 +34,8 @@ class StaticObjects(Objects):
 	'''
 	@ Класс статичных объектов. Нужен чтобы уметь различать мобов/героев от стен и прочих объектов
 	'''
-	pass
+	def is_in(self, x, y):
+		return (self.x <= x <= self.x + CELL_SIZE) and (self.y <= y <= self.y + CELL_SIZE)
 
 
 class LiveObjects(Objects):
@@ -58,6 +60,7 @@ class Space():
 
 	def get_map(self):
 		return self.map		
+
 
 class Map():
 	'''
@@ -85,17 +88,16 @@ class Map():
 			if type(obj) == type(Exit(0, 0)):
 				return obj
 
+
 class Wall(StaticObjects):
 	'''
 	@ Класс стен
 	'''
-	def is_in(self, x, y):
-		return (self.x <= x <= self.x + CELL_SIZE) and (self.y <= y <= self.y + CELL_SIZE)
+	pass
 
 
 class Exit(StaticObjects):
-	def is_in(self, x, y):
-		return (self.x <= x <= self.x + CELL_SIZE) and (self.y <= y <= self.y + CELL_SIZE)
+	pass
 
 
 class Hero(LiveObjects):
@@ -110,68 +112,6 @@ class Hero(LiveObjects):
 
 	def rotate(self, dfi):
 		self.angle += dfi
-
-
-class LevelGenerator():
-	'''
-	@ Класс генератора уровней. Нужен чтоб брать на вход номер уровня и создавать Space().
-	@ Карты хранятся в текстовом формате
-	'''
-	def __init__(self):
-		self.legend = self.get_legend()
-
-	def get_legend(self):
-		legend = dict()
-		data = self._get_data_from('legend')
-		
-		for line in data:
-			char = line.split()[0]
-			object_name = line.split()[-1]
-			legend[char] = object_name
-
-		return legend
-
-	def generate_level(self, num_of_level):
-		live_objects = []
-		static_objects = []
-		
-		name_of_file = 'level' + str(num_of_level)
-		raw_map = self._get_data_from(name_of_file)
-
-		for y in range(len(raw_map)):
-			for x in range(len(raw_map[0])):
-				coords = (x * CELL_SIZE, y * CELL_SIZE)
-				ch = raw_map[y][x]
-				obj_name = self.legend[ch][:-2]
-
-				if obj_name == 'Empty':
-					continue
-
-				tmp = []
-				eval('tmp.append(' + obj_name + '(' + ','.join([str(coords[0]), str(coords[1])]) + '))') 
-				tmp = tmp[0]
-
-				if self._isLive(tmp):
-					live_objects.append(tmp)
-				else:
-					static_objects.append(tmp)
-
-		return Space(live_objects, Map(static_objects))
-
-	def _isLive(self, obj):
-		objectType = type(obj)
-		return 'LiveObjects' in str(objectType.__bases__)
-
-	def _get_data_from(self, name_of_file):
-		path = os.path.join(PATH_TO_LEVELS, name_of_file)
-		if not path.endswith('.txt'):
-			path += '.txt' 
-		
-		data = []
-		with open(path, 'r') as f:
-			data = [line.strip() for line in f]
-
-		return data
 
 
 class Ray(Objects):
@@ -271,7 +211,6 @@ class Camera(Objects):
 	def _calc_h_on_window(self, r):
 		if r > 1:
 			return WINDOW_HEIGHT / r
-
 		else:
 			return WINDOW_HEIGHT
 
@@ -284,10 +223,10 @@ class Camera(Objects):
 		else:
 			return 1
 
+
 class MainProcessor():
 	'''
 	@ Процессор обрабатывающий нажатия во время игры
-	@ TODO: сделать аргументом event
 	'''
 	def __init__(self, space):
 		self.space = space
